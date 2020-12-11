@@ -1,11 +1,12 @@
 <?php 
     session_start();
-    header('Access-Control-Allow-Origin: https://www.myhr.thanulux.com/');
+    header('Access-Control-Allow-Origin: *');
     require( dirname( __FILE__ ) . '/wp-load.php' );
     define("_token","#");
     
     global $wpdb;
     $obj = new ESSlogno;
+    $obj_token_status = $obj->validateToken( $_POST['req_token'] ); // Validate Token from Client
     $obj_token = json_decode( $obj->validateToken( $_POST['req_token'] ) ); // Validate Token from Client
     $obj_name = json_decode( $obj->validateName( $_POST['username'] ) );
     $obj_email = json_decode( $obj->validateEmail( $_POST['email'] ) );
@@ -35,7 +36,7 @@
                     'account_state' => $_POST['account_state'],
                     'subscription_starts' => date('Y-m-d'),
                     'last_accessed' => date('Y-m-d'),
-                    'last_accessed_from_ip' => '10.0.40.250') );
+                    'last_accessed_from_ip' => '8.8.8.8') );
                 
                 if($result_check){
                     $res = array('Status' => 200, 'error_desc' => 'Success');
