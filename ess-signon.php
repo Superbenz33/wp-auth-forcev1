@@ -1,5 +1,9 @@
 <?php 
-    session_start();
+    /*
+    ** Class Authorization
+    ** Version : 1.0.0
+    ** Create by : Benz.Surachai
+    */
 
     header('Access-Control-Allow-Origin: *');
     require( dirname( __FILE__ ) . '/wp-load.php' );
@@ -10,6 +14,9 @@
     $obj_check_user = json_decode( $obj->validateUser($_GET['uuid']) );
     $custom_signon = $obj->wpdocs_custom_login($obj_check_user->username,$obj_check_user->pass);
     
+    /*
+    ** Class Authorization
+    */
     class ESSlogno {
         
         public function validateUser($req_uuid) {

@@ -1,39 +1,47 @@
 <?php 
-    session_start();
+    /*
+    ** Version : 1.0.0
+    ** Create by : Benz.Surachai
+    */
+
     header('Access-Control-Allow-Origin: *');
+    header("Content-Type:application/json");
+
     require( dirname( __FILE__ ) . '/wp-load.php' );
+    
     define("_token","#");
+    $req_data = json_decode(file_get_contents('php://input'), true);
     
     global $wpdb;
     $obj = new ESSlogno;
-    $obj_token_status = $obj->validateToken( $_POST['req_token'] ); // Validate Token from Client
-    $obj_token = json_decode( $obj->validateToken( $_POST['req_token'] ) ); // Validate Token from Client
-    $obj_name = json_decode( $obj->validateName( $_POST['username'] ) );
-    $obj_email = json_decode( $obj->validateEmail( $_POST['email'] ) );
-    $obj_pass = json_decode( $obj->validatePassword( $_POST['pass'] ) );
+    $obj_token_status = $obj->validateToken( $req_data['req_token'] ); // Validate Token from Client
+    $obj_token = json_decode( $obj->validateToken( $req_data['req_token'] ) ); // Validate Token from Client
+    $obj_name = json_decode( $obj->validateName( $req_data['username'] ) );
+    $obj_email = json_decode( $obj->validateEmail( $req_data['email'] ) );
+    $obj_pass = json_decode( $obj->validatePassword( $req_data['pass'] ) );
 
     if($obj_token->Status == 200) { 
         if($obj_name->Status == 200 && $obj_email->Status == 200 && $obj_pass->Status == 200 ) { 
 
             /* Register New User */
-            $force_regis = register_new_user($_POST['username'], $_POST['email'], $_POST['pass']);
+            $force_regis = register_new_user($req_data['username'], $req_data['email'], $req_data['pass']);
 
             if( ! $force_regis ){
                 $res = array('Status' => 404, 'error_desc' => 'Can\'t register!! Something went wrong.');
                 echo json_encode($res);
             }else{
                 
-                $result = $wpdb->get_results("select * from # where user_email = '".$_POST['email']."' order by user_registered desc limit 1");
+                $result = $wpdb->get_results("select * from # where user_email = '".$req_data['email']."' order by user_registered desc limit 1");
                 $result_check = $wpdb->insert( '#', array(
-                    'user_name' => $_POST['username'],
+                    'user_name' => $req_data['username'],
                     'password' => $result[0]->user_pass,
-                    'email' => $_POST['email'],
+                    'email' => $req_data['email'],
                     'member_since' => date('Y-m-d'),
                     'membership_level' => '2',
-                    'phone' => $_POST['phone'],
+                    'phone' => $req_data['phone'],
                     'country' => 'Thailand',
-                    'gender' => $_POST['gender'],
-                    'account_state' => $_POST['account_state'],
+                    'gender' => $req_data['gender'],
+                    'account_state' => $req_data['account_state'],
                     'subscription_starts' => date('Y-m-d'),
                     'last_accessed' => date('Y-m-d'),
                     'last_accessed_from_ip' => '8.8.8.8') );
@@ -49,7 +57,7 @@
             }
 
         } else {
-            $res = array('Status' => 404, 'error_desc' => 'Can\'t register!! Please check you input.');
+            $res = array('Status' => 201, 'error_desc' => 'Username or Email has been register !!');
             echo json_encode($res);
         }
 
@@ -59,8 +67,6 @@
 
     /*
     ** Class Authorization
-    ** Version : 1.0.0
-    ** Create by : TNL Developer Team.
     */
     class ESSlogno {
         public function validateName($username) {
